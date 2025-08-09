@@ -8,9 +8,9 @@ function App() {
           position: relative;
           font-family: 'Segoe UI', sans-serif;
           text-align: center;
-          padding: 50px 20px;
+          padding: 20px 10px;
           min-height: 100vh;
-          background: linear-gradient(270deg, #ff9a9e, #fad0c4, #fbc2eb, #a1c4fd, #c2e9fb);
+          background: linear-gradient(270deg, #ffecd2, #fcb69f, #a1c4fd, #c2e9fb);
           background-size: 1000% 1000%;
           animation: bgMove 15s ease infinite;
           overflow: hidden;
@@ -24,96 +24,144 @@ function App() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
+
+        .light-beam {
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+          animation: rotateBeam 20s linear infinite;
+          pointer-events: none;
+        }
+        @keyframes rotateBeam {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
         .particle {
           position: absolute;
-          width: 8px;
-          height: 8px;
           background: rgba(255, 255, 255, 0.8);
           border-radius: 50%;
-          animation: floatParticle 6s linear infinite;
+          animation: floatParticle linear infinite;
         }
         @keyframes floatParticle {
           from { transform: translateY(100vh) scale(0.5); opacity: 0; }
           50% { opacity: 1; }
           to { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
+
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
         }
+        @keyframes heartbeat {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.05); }
+        }
+
         .epic-title {
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 10px;
-          font-size: 2.5rem;
+          gap: 15px;
+          font-size: 3rem;
           font-weight: bold;
           color: white;
-          margin-bottom: 40px;
-          text-shadow: 0 0 10px rgba(255,255,255,0.8);
-          animation: fadeInUp 1s ease forwards;
+          margin-bottom: 25px;
+          text-shadow: 0 0 15px rgba(255,255,255,0.8);
+          animation: fadeInUp 1s ease forwards, heartbeat 3s ease-in-out infinite;
           animation-delay: 0.2s;
           opacity: 0;
         }
         .epic-title img {
-          width: 40px;
-          height: 40px;
-          animation: spinIcon 4s linear infinite;
+          width: 55px;
+          height: 55px;
+          border-radius: 50%;
+          background: rgba(255,255,255,0.25);
+          padding: 5px;
+          animation: heartbeat 3s ease-in-out infinite, glowPulse 2s ease-in-out infinite;
         }
-        @keyframes spinIcon {
-          0% { transform: rotate(0deg); }
-          100% { transform: rotate(360deg); }
+        @keyframes glowPulse {
+          0%, 100% { box-shadow: 0 0 10px rgba(255,255,255,0.4); }
+          50% { box-shadow: 0 0 20px rgba(255,255,255,0.8); }
         }
+
         .epic-btn {
           display: flex;
+          flex-direction: column;
           align-items: center;
           justify-content: center;
           gap: 10px;
-          padding: 18px 45px;
-          margin: 10px 0;
+          padding: 15px;
+          margin: 12px 0;
           border: none;
-          border-radius: 50px;
-          background: linear-gradient(135deg, #ff758c, #ff7eb3);
+          border-radius: 16px;
           color: white;
           font-size: 1.4rem;
           font-weight: bold;
           cursor: pointer;
-          width: 100%;
-          max-width: 300px;
+          width: 180px;
+          height: 180px;
           opacity: 0;
-          animation: fadeInUp 1s ease forwards, pulseBig 1.2s ease-in-out infinite alternate, floatBtn 3s ease-in-out infinite;
+          animation: fadeInUp 1s ease forwards, floatBtn 3s ease-in-out infinite;
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+          position: relative;
+          overflow: hidden;
         }
         .epic-btn:nth-of-type(1) {
-          animation-delay: 0.8s, 1.5s, 1.5s;
+          background: linear-gradient(135deg, #ff6f61, #ff9a8b);
+          animation-delay: 0.6s;
         }
         .epic-btn:nth-of-type(2) {
-          animation-delay: 1.2s, 1.9s, 1.9s;
+          background: linear-gradient(135deg, #43cea2, #185a9d);
+          animation-delay: 1s;
         }
+
+        .epic-btn::before {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: rgba(255,255,255,0.2);
+          transform: rotate(45deg);
+          transition: transform 0.5s ease;
+        }
+        .epic-btn:hover::before {
+          transform: rotate(45deg) translate(50%, 50%);
+        }
+
         .epic-btn img {
-          width: 28px;
-          height: 28px;
+          width: 55px;
+          height: 55px;
           object-fit: contain;
+          background: rgba(255,255,255,0.2);
+          padding: 8px;
+          border-radius: 50%;
         }
         .epic-btn:hover {
-          transform: scale(1.3) rotate(2deg);
-          box-shadow: 0 0 50px rgba(255, 118, 157, 1);
+          transform: translateY(-6px) scale(1.05);
+          box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-        @keyframes pulseBig {
-          0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 118, 157, 0.6); }
-          100% { transform: scale(1.25); box-shadow: 0 0 60px rgba(255, 118, 157, 1); }
-        }
+
         @keyframes floatBtn {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-8px); }
+          50% { transform: translateY(-5px); }
         }
+
         @media (max-width: 600px) {
-          .epic-title {
-            font-size: 1.8rem;
-            margin-bottom: 25px;
-          }
+          .epic-title { font-size: 2.2rem; }
           .epic-btn {
-            font-size: 1.1rem;
-            padding: 14px 30px;
+            width: 150px;
+            height: 150px;
+            font-size: 1.2rem;
+          }
+          .epic-btn img {
+            width: 45px;
+            height: 45px;
           }
         }
       `;
@@ -121,12 +169,21 @@ function App() {
     }
 
     const container = document.querySelector(".epic-location-container");
+    if (container && !container.querySelector(".light-beam")) {
+      const beam = document.createElement("div");
+      beam.className = "light-beam";
+      container.appendChild(beam);
+    }
+
     if (container && container.querySelectorAll(".particle").length === 0) {
       for (let i = 0; i < 20; i++) {
         const p = document.createElement("div");
         p.className = "particle";
+        const size = Math.random() * 6 + 4;
+        p.style.width = size + "px";
+        p.style.height = size + "px";
         p.style.left = Math.random() * 100 + "%";
-        p.style.animationDuration = 4 + Math.random() * 4 + "s";
+        p.style.animationDuration = 4 + Math.random() * 6 + "s";
         p.style.opacity = Math.random();
         container.appendChild(p);
       }
@@ -142,7 +199,7 @@ function App() {
     React.createElement(
       "h1",
       { className: "epic-title" },
-      " Chọn chi nhánh bạn muốn tìm hiểu ",
+      "Vui lòng chọn chi nhánh bạn muốn khám phá ^^",
       IconImage("components/icon/iconshiba.png")
     ),
     React.createElement(
@@ -161,12 +218,10 @@ function App() {
   );
 }
 
+  function loadComponent(name) {
+    const script = document.createElement("script");
+    script.src = `./components/${name}.js`;
+    document.body.appendChild(script);
+  }
 
-
-function loadComponent(name) {
-  const script = document.createElement("script");
-  script.src = `./components/${name}.js`;
-  document.body.appendChild(script);
-}
-
-ReactDOM.render(React.createElement(App), document.getElementById("root"));
+  ReactDOM.render(React.createElement(App), document.getElementById("root"));
