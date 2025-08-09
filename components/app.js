@@ -37,7 +37,6 @@ function App() {
           50% { opacity: 1; }
           to { transform: translateY(-10vh) scale(1); opacity: 0; }
         }
-        /* Hiệu ứng fade-in từng phần */
         @keyframes fadeInUp {
           from { opacity: 0; transform: translateY(20px); }
           to { opacity: 1; transform: translateY(0); }
@@ -79,18 +78,16 @@ function App() {
           font-size: 1.4rem;
           font-weight: bold;
           cursor: pointer;
-          transition: all 0.4s ease;
-          box-shadow: 0 0 20px rgba(255, 118, 157, 0.6);
           width: 100%;
           max-width: 300px;
           opacity: 0;
-          animation: fadeInUp 1s ease forwards;
+          animation: fadeInUp 1s ease forwards, pulseBig 1.2s ease-in-out infinite alternate, floatBtn 3s ease-in-out infinite;
         }
         .epic-btn:nth-of-type(1) {
-          animation-delay: 0.8s;
+          animation-delay: 0.8s, 1.5s, 1.5s;
         }
         .epic-btn:nth-of-type(2) {
-          animation-delay: 1.2s;
+          animation-delay: 1.2s, 1.9s, 1.9s;
         }
         .epic-btn img {
           width: 28px;
@@ -98,8 +95,16 @@ function App() {
           object-fit: contain;
         }
         .epic-btn:hover {
-          transform: scale(1.08) rotate(1deg);
-          box-shadow: 0 0 35px rgba(255, 118, 157, 0.9);
+          transform: scale(1.3) rotate(2deg);
+          box-shadow: 0 0 50px rgba(255, 118, 157, 1);
+        }
+        @keyframes pulseBig {
+          0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 118, 157, 0.6); }
+          100% { transform: scale(1.25); box-shadow: 0 0 60px rgba(255, 118, 157, 1); }
+        }
+        @keyframes floatBtn {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-8px); }
         }
         @media (max-width: 600px) {
           .epic-title {
