@@ -69,7 +69,7 @@ function App() {
           font-size: 3rem;
           font-weight: bold;
           color: white;
-          margin-bottom: 25px;
+          margin-bottom: 40px;
           text-shadow: 0 0 15px rgba(255,255,255,0.8);
           animation: fadeInUp 1s ease forwards, heartbeat 3s ease-in-out infinite;
           animation-delay: 0.2s;
@@ -88,22 +88,30 @@ function App() {
           50% { box-shadow: 0 0 20px rgba(255,255,255,0.8); }
         }
 
+        .button-row {
+          display: flex;
+          gap: 30px;
+          width: 100%;
+          max-width: 800px;
+          justify-content: center;
+        }
+
         .epic-btn {
+          flex: 1;
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
           gap: 10px;
-          padding: 15px;
+          padding: 20px;
           margin: 12px 0;
           border: none;
-          border-radius: 16px;
+          border-radius: 20px;
           color: white;
           font-size: 1.4rem;
           font-weight: bold;
           cursor: pointer;
-          width: 180px;
-          height: 180px;
+          min-height: 180px;
           opacity: 0;
           animation: fadeInUp 1s ease forwards, floatBtn 3s ease-in-out infinite;
           transition: transform 0.25s ease, box-shadow 0.25s ease;
@@ -154,9 +162,11 @@ function App() {
 
         @media (max-width: 600px) {
           .epic-title { font-size: 2.2rem; }
+          .button-row {
+            flex-direction: column;
+          }
           .epic-btn {
-            width: 150px;
-            height: 150px;
+            min-height: 150px;
             font-size: 1.2rem;
           }
           .epic-btn img {
@@ -203,16 +213,20 @@ function App() {
       IconImage("components/icon/iconshiba.png")
     ),
     React.createElement(
-      "button",
-      { className: "epic-btn", onClick: () => loadComponent("saigon") },
-      IconImage("components/icon/iconsaigon.png"),
-      "Sài Gòn"
-    ),
-    React.createElement(
-      "button",
-      { className: "epic-btn", onClick: () => loadComponent("dalat") },
-      IconImage("components/icon/icondalat.png"),
-      "Đà Lạt"
+      "div",
+      { className: "button-row" },
+      React.createElement(
+        "button",
+        { className: "epic-btn", onClick: () => loadComponent("saigon") },
+        IconImage("components/icon/iconsaigon.png"),
+        "Sài Gòn"
+      ),
+      React.createElement(
+        "button",
+        { className: "epic-btn", onClick: () => loadComponent("dalat") },
+        IconImage("components/icon/icondalat.png"),
+        "Đà Lạt"
+      )
     ),
     React.createElement("div", { id: "content" })
   );
