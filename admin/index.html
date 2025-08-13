@@ -1,0 +1,709 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>Quản lý thú theo chi nhánh - Firebase</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root{
+      --bg:#0b121b;
+      --card:#121a24;
+      --muted:#8aa0b2;
+      --text:#e8f0f7;
+      --primary:#4aa8ff;
+      --primary-600:#2f8fe6;
+      --success:#38c172;
+      --success-600:#2ea463;
+      --danger:#ef4b4b;
+      --danger-600:#cc3f3f;
+      --warning:#ffb020;
+      --border:#1f2b3a;
+      --shadow:0 8px 24px rgba(0,0,0,.3);
+      --radius:16px;
+    }
+    .light{
+      --bg:#f5f7fb;
+      --card:#ffffff;
+      --muted:#5b6b7a;
+      --text:#0c1623;
+      --primary:#246bff;
+      --primary-600:#1b54cc;
+      --success:#2fb36c;
+      --success-600:#269357;
+      --danger:#e23d3d;
+      --danger-600:#c23232;
+      --warning:#f59f00;
+      --border:#e6ebf1;
+      --shadow:0 8px 24px rgba(10,31,68,.08);
+    }
+
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background:var(--bg);
+      color:var(--text);
+    }
+
+    .app{
+      max-width:1100px;
+      margin:0 auto;
+      padding:24px;
+    }
+
+    /* Header */
+    .app-header{
+      position:sticky;
+      top:0;
+      background:linear-gradient(180deg, rgba(0,0,0,.25), rgba(0,0,0,0)) , var(--bg);
+      z-index:10;
+      backdrop-filter: blur(10px);
+      padding:16px 0 8px;
+    }
+    .brand{
+      display:flex;align-items:center;gap:12px;
+    }
+    .brand-logo{
+      width:40px;height:40px;border-radius:12px;
+      background: radial-gradient(circle at 30% 30%, var(--primary), transparent 60%),
+                  radial-gradient(circle at 70% 70%, var(--success), transparent 55%),
+                  var(--card);
+      box-shadow: var(--shadow);
+    }
+    .brand h1{
+      font-size:1.25rem;margin:0 0 2px 0;font-weight:700;
+    }
+    .brand small{color:var(--muted)}
+
+    .header-actions{margin-left:auto;display:flex;gap:10px}
+    .toolbar{
+      display:flex;align-items:center;gap:12px;flex-wrap:wrap
+    }
+
+    /* Buttons */
+    button{
+      appearance:none;border:1px solid var(--border);background:var(--card);color:var(--text);
+      padding:10px 14px;border-radius:12px;font-weight:600;cursor:pointer;
+      transition:transform .08s ease, background .2s ease, border-color .2s ease, box-shadow .2s ease;
+    }
+    button:hover{transform:translateY(-1px)}
+    .btn-primary{background:var(--primary);border-color:transparent;color:#fff}
+    .btn-primary:hover{background:var(--primary-600)}
+    .btn-success{background:var(--success);border-color:transparent;color:#fff}
+    .btn-success:hover{background:var(--success-600)}
+    .btn-danger{background:var(--danger);border-color:transparent;color:#fff}
+    .btn-danger:hover{background:var(--danger-600)}
+    .btn-muted{color:var(--muted)}
+    .btn-block{width:100%}
+
+    /* Layout */
+    .grid{
+      display:grid;
+      grid-template-columns:260px 1fr;
+      gap:16px;
+      margin-top:16px;
+    }
+    @media (max-width: 900px){
+      .grid{grid-template-columns:1fr}
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .card-header{
+      padding:16px 16px 10px;border-bottom:1px solid var(--border);
+      display:flex;align-items:center;justify-content:space-between;gap:10px
+    }
+    .card-title{margin:0;font-size:1.05rem}
+    .card-sub{margin:4px 0 0 0;font-size:.9rem;color:var(--muted)}
+    .card-body{padding:16px}
+
+    /* Sidebar */
+    .sidebar .btn-branch{
+      width:100%;margin-bottom:10px;display:flex;align-items:center;justify-content:center;gap:8px
+    }
+
+    /* Forms */
+    input[type="text"]{
+      width:100%;padding:10px 12px;border-radius:12px;border:1px solid var(--border);
+      background:transparent;color:var(--text);outline:none;
+    }
+    input::placeholder{color:var(--muted)}
+
+    .inline-form{display:flex;gap:10px;flex-wrap:wrap}
+    .inline-form .grow{flex:1 1 240px}
+
+    /* Tables */
+    .table-wrap{width:100%;overflow:auto;border-radius:12px;border:1px solid var(--border)}
+    table{width:100%;border-collapse:separate;border-spacing:0;background:transparent}
+    thead th{
+      position:sticky;top:0;background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(0,0,0,0));
+      text-align:left;padding:12px;border-bottom:1px solid var(--border);font-size:.9rem;color:var(--muted)
+    }
+    tbody td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+    tbody tr:hover{background:rgba(148, 163, 184, .08)}
+
+    .row-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap}
+
+    /* Section divider */
+    .section-title{
+      margin:18px 0 12px;font-size:1rem;font-weight:700
+    }
+    hr{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+    /* Helpers */
+    .muted{color:var(--muted)}
+    .empty-state{padding:18px;text-align:center;color:var(--muted)}
+
+    /* Toast-y alert (native alert thay thế nhẹ) */
+    .toast{position:fixed;bottom:20px;right:20px;background:var(--card);border:1px solid var(--border);
+      padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);display:none}
+    .toast.show{display:block;animation:fade .2s ease}
+    @keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+    /* Toggle theme */
+    .theme-toggle{display:flex;align-items:center;gap:8px}
+    .switch{
+      width:48px;height:28px;border-radius:999px;position:relative;background:var(--border);border:1px solid var(--border)
+    }
+    .switch::after{
+      content:"";position:absolute;top:2px;left:2px;width:24px;height:24px;border-radius:50%;
+      background:var(--card);box-shadow:var(--shadow);transition:left .2s ease
+    }
+    .switch.active{background:var(--primary)}
+    .switch.active::after{left:22px}
+  </style>
+</head>
+<body class="light">
+  <div class="app">
+    <!-- Header -->
+    <div class="app-header card">
+      <div class="card-body" style="display:flex;align-items:center;gap:16px">
+        <div class="brand">
+          <div class="brand-logo"></div>
+          <div>
+            <h1>Quản lý thú theo chi nhánh</h1>
+            <small class="muted">Firebase Realtime Database</small>
+          </div>
+        </div>
+        <div class="header-actions toolbar">
+          <div class="theme-toggle">
+            <span class="muted" id="themeLabel">Chế độ sáng</span>
+            <div id="themeSwitch" class="switch" role="button" aria-label="Đổi giao diện"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Sidebar chọn chi nhánh -->
+      <aside class="sidebar card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Chọn chi nhánh</h3>
+            <p class="card-sub">Sài Gòn hoặc Đà Lạt</p>
+          </div>
+        </div>
+        <div class="card-body" id="branchSelection">
+          <button id="btnSaigon" class="btn-branch btn-primary">Sài Gòn</button>
+          <button id="btnDalat" class="btn-branch">Đà Lạt</button>
+        </div>
+        <div class="card-body" style="display:none" id="backBox">
+          <button id="backBtn" class="btn-block btn-muted">← Quay lại chọn chi nhánh</button>
+        </div>
+      </aside>
+
+      <!-- Khu quản lý -->
+      <main class="card">
+        <div class="card-header">
+          <div>
+            <h3 class="card-title">Quản lý thú chi nhánh: <span id="branchName" class="muted">—</span></h3>
+            <p class="card-sub">Thêm thú (Chó, Mèo, ...), thuộc tính và từng con</p>
+          </div>
+          <div class="toolbar">
+            <button id="showAddAnimalBtn" class="btn-success">+ Thêm thú</button>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <!-- Form thêm thú -->
+          <div id="addAnimalSection" class="inline-form" style="display:none">
+            <div class="grow">
+              <input type="text" id="animalNameInput" placeholder="Nhập tên thú (vd: Chó, Mèo, Corgi...)" />
+            </div>
+            <button id="saveAnimalBtn" class="btn-success">Lưu</button>
+          </div>
+
+          <!-- Danh sách thú -->
+          <div class="section-title">Danh sách thú</div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th style="width:56px">#</th>
+                  <th>Tên thú</th>
+                  <th style="width:200px;text-align:right">Hành động</th>
+                </tr>
+              </thead>
+              <tbody id="animalTableBody">
+                <tr><td colspan="3"><div class="empty-state">Đang tải danh sách thú...</div></td></tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Quản lý thuộc tính & từng con -->
+          <section id="attributeManager" style="display:none">
+            <hr />
+            <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+              <h3 class="card-title" style="margin:0">Quản lý thuộc tính cho thú: <span id="selectedAnimalName" class="muted">—</span></h3>
+              <button id="showAddAttributeBtn" class="btn-success">+ Thêm thuộc tính</button>
+            </div>
+
+            <!-- Form thêm thuộc tính -->
+            <form id="addAttributeForm" class="inline-form" style="display:none;margin-top:12px">
+              <div class="grow"><input type="text" id="attributeNameInput" placeholder="Tên thuộc tính (vd: Tên, Tuổi, Màu,...)" required /></div>
+              <button type="submit" class="btn-success">Lưu thuộc tính</button>
+            </form>
+
+            <!-- Bảng thuộc tính -->
+            <div class="section-title">Thuộc tính</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th style="width:56px">#</th>
+                    <th>Tên thuộc tính</th>
+                    <th style="width:160px;text-align:right">Hành động</th>
+                  </tr>
+                </thead>
+                <tbody id="attributesTableBody">
+                  <tr><td colspan="3"><div class="empty-state">Đang tải thuộc tính...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <hr />
+
+            <h3 class="card-title" style="margin:0 0 10px">Thêm từng con thú cho: <span id="selectedAnimalName2" class="muted">—</span></h3>
+            <form id="addInstanceForm" class="inline-form">
+              <div id="instanceInputsContainer" class="grow"></div>
+              <button type="submit" class="btn-primary">Thêm con thú</button>
+            </form>
+
+            <div class="section-title">Danh sách từng con</div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr id="instancesHeadRow">
+                    <!-- Sẽ render theo attributesOrder -->
+                  </tr>
+                </thead>
+                <tbody id="instancesTableBody">
+                  <tr><td><div class="empty-state">Đang tải danh sách con thú...</div></td></tr>
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-app.js";
+    import { getDatabase, ref, set, onValue, remove } from "https://www.gstatic.com/firebasejs/9.23.0/firebase-database.js";
+
+    /* ======= Firebase Config (giữ nguyên) ======= */
+    const firebaseConfig = {
+      apiKey: "AIzaSyAV7r-rjXo6U62LX1AA7c7DAHb8GhOOOsg",
+      authDomain: "saigon-dalat.firebaseapp.com",
+      databaseURL: "https://saigon-dalat-default-rtdb.firebaseio.com",
+      projectId: "saigon-dalat",
+      storageBucket: "saigon-dalat.firebasestorage.app",
+      messagingSenderId: "339735183485",
+      appId: "1:339735183485:web:bc23cd740104d272577114",
+      measurementId: "G-FDLZXR2X8P"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db  = getDatabase(app);
+
+    /* ======= DOM elements ======= */
+    const branchSelection = document.getElementById('branchSelection');
+    const backBox         = document.getElementById('backBox');
+    const backBtn         = document.getElementById('backBtn');
+    const branchNameSpan  = document.getElementById('branchName');
+
+    const showAddAnimalBtn = document.getElementById('showAddAnimalBtn');
+    const addAnimalSection = document.getElementById('addAnimalSection');
+    const animalNameInput  = document.getElementById('animalNameInput');
+    const saveAnimalBtn    = document.getElementById('saveAnimalBtn');
+    const animalTableBody  = document.getElementById('animalTableBody');
+
+    const attributeManager         = document.getElementById('attributeManager');
+    const selectedAnimalNameSpan   = document.getElementById('selectedAnimalName');
+    const selectedAnimalNameSpan2  = document.getElementById('selectedAnimalName2');
+    const showAddAttributeBtn      = document.getElementById('showAddAttributeBtn');
+    const addAttributeForm         = document.getElementById('addAttributeForm');
+    const attributeNameInput       = document.getElementById('attributeNameInput');
+    const attributesTableBody      = document.getElementById('attributesTableBody');
+
+    const addInstanceForm          = document.getElementById('addInstanceForm');
+    const instanceInputsContainer  = document.getElementById('instanceInputsContainer');
+    const instancesHeadRow         = document.getElementById('instancesHeadRow');
+    const instancesTableBody       = document.getElementById('instancesTableBody');
+
+    const themeSwitch = document.getElementById('themeSwitch');
+    const themeLabel  = document.getElementById('themeLabel');
+    const toastEl     = document.getElementById('toast');
+
+    /* ======= State ======= */
+    let currentBranch = null;
+    let animalsRef    = null;
+    let selectedAnimal= null;
+    let attributesData = {};
+    let attributesOrder = [];
+
+    /* ======= Helpers ======= */
+    const toast = (msg) => {
+      toastEl.textContent = msg;
+      toastEl.classList.add('show');
+      setTimeout(()=>toastEl.classList.remove('show'), 1800);
+    };
+
+    const clearChildren = (el) => {
+      while(el.firstChild) el.removeChild(el.firstChild);
+    };
+
+    /* ======= Load Animals by Branch (render table) ======= */
+    function loadAnimals(branch){
+animalsRef = ref(db, `cities/${branch}/animals`);
+      clearChildren(animalTableBody);
+      animalTableBody.insertAdjacentHTML('beforeend',
+`<tr><td colspan="3"><div class="empty-state">Đang tải danh sách thú...</div></td></tr>`
+      );
+
+      onValue(animalsRef, snap => {
+        const data = snap.val();
+        clearChildren(animalTableBody);
+
+        if(!data){
+          animalTableBody.insertAdjacentHTML('beforeend',
+`<tr><td colspan="3"><div class="empty-state">Chưa có thú nào.</div></td></tr>`
+          );
+          attributeManager.style.display = 'none';
+          selectedAnimal = null;
+          return;
+        }
+
+        let i = 0;
+        Object.keys(data).forEach(animalName => {
+          i++;
+          const tr = document.createElement('tr');
+
+          const tdIdx = document.createElement('td');
+          tdIdx.textContent = i;
+
+          const tdName = document.createElement('td');
+          const nameBtn = document.createElement('button');
+          nameBtn.textContent = animalName;
+          nameBtn.className = 'btn-muted';
+          nameBtn.style.border = '1px solid var(--border)';
+          nameBtn.style.background = 'transparent';
+          nameBtn.addEventListener('click', () => selectAnimal(animalName));
+          tdName.appendChild(nameBtn);
+
+          const tdAct = document.createElement('td');
+          tdAct.className = 'row-actions';
+          const manageBtn = document.createElement('button');
+          manageBtn.textContent = 'Quản lý';
+          manageBtn.className = 'btn-primary';
+          manageBtn.addEventListener('click', () => selectAnimal(animalName));
+
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Xóa';
+          delBtn.className = 'btn-danger';
+          delBtn.addEventListener('click', () => {
+if (confirm(`Bạn có chắc muốn xóa thú "${animalName}"?`)) {
+remove(ref(db, `cities/${currentBranch}/animals/${animalName}`));
+              if(selectedAnimal === animalName){
+                attributeManager.style.display = 'none';
+                selectedAnimal = null;
+              }
+              toast('Đã xóa.');
+            }
+          });
+
+          tdAct.append(manageBtn, delBtn);
+          tr.append(tdIdx, tdName, tdAct);
+          animalTableBody.appendChild(tr);
+        });
+      });
+    }
+
+    /* ======= Select Branch ======= */
+    function selectBranch(branch){
+      currentBranch = branch;
+      branchNameSpan.textContent = branch;
+      branchSelection.style.display = 'none';
+      backBox.style.display = 'block';
+      attributeManager.style.display = 'none';
+      selectedAnimal = null;
+      addAnimalSection.style.display = 'none';
+      animalNameInput.value = '';
+      loadAnimals(branch);
+    }
+
+    /* ======= Select Animal (show attribute manager) ======= */
+    function selectAnimal(animalName){
+      selectedAnimal = animalName;
+      selectedAnimalNameSpan.textContent  = animalName;
+      selectedAnimalNameSpan2.textContent = animalName;
+      attributeManager.style.display = 'block';
+      addAttributeForm.style.display = 'none';
+      attributeNameInput.value = '';
+      loadAttributes(animalName);
+      loadInstances(animalName);
+      clearInstanceForm();
+    }
+
+    /* ======= Load Attributes (render table) ======= */
+    function loadAttributes(animalName){
+const attributesRef = ref(db, `cities/${currentBranch}/animals/${animalName}/attributes`);
+      clearChildren(attributesTableBody);
+      attributesTableBody.insertAdjacentHTML('beforeend',
+        `<tr><td colspan="3"><div class="empty-state">Đang tải thuộc tính...</div></td></tr>`
+      );
+      attributesData = {};
+      attributesOrder = [];
+
+      onValue(attributesRef, snap => {
+        const data = snap.val();
+        clearChildren(attributesTableBody);
+
+        if(!data){
+          attributesData = {};
+          attributesOrder = [];
+          attributesTableBody.insertAdjacentHTML('beforeend',
+            `<tr><td colspan="3"><div class="empty-state">Chưa có thuộc tính nào.</div></td></tr>`
+          );
+          renderInstanceFormInputs(); // sẽ ẩn form nếu chưa có thuộc tính
+          renderInstancesHead();      // cập nhật head theo order
+          return;
+        }
+
+        attributesData = data;
+        attributesOrder = Object.keys(data).reverse(); // mới nhất lên đầu
+        let i=0;
+        for(const attrName of attributesOrder){
+          i++;
+          const tr = document.createElement('tr');
+
+          const tdIdx = document.createElement('td'); tdIdx.textContent = i;
+          const tdName= document.createElement('td'); tdName.textContent = attrName;
+
+          const tdAct = document.createElement('td'); tdAct.className='row-actions';
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Xóa';
+          delBtn.className = 'btn-danger';
+          delBtn.addEventListener('click', ()=>{
+            if(confirm(`Bạn có chắc muốn xóa thuộc tính "\${attrName}"?`)){
+              remove(ref(db, `cities/\${currentBranch}/animals/\${selectedAnimal}/attributes/\${attrName}`));
+              toast('Đã xóa thuộc tính.');
+            }
+          });
+
+          tdAct.appendChild(delBtn);
+          tr.append(tdIdx, tdName, tdAct);
+          attributesTableBody.appendChild(tr);
+        }
+        renderInstanceFormInputs();
+        renderInstancesHead();
+      });
+    }
+
+    /* ======= Render instance form inputs theo attributesOrder ======= */
+    function renderInstanceFormInputs(){
+      instanceInputsContainer.innerHTML = '';
+      if(!attributesOrder || attributesOrder.length === 0){
+        addInstanceForm.style.display = 'none';
+        instanceInputsContainer.innerHTML = '<div class="muted">Vui lòng thêm thuộc tính trước khi thêm từng con thú.</div>';
+        return;
+      }
+      addInstanceForm.style.display = 'flex';
+      for(const attrName of attributesOrder){
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.name = attrName;
+        input.placeholder = attrName;
+        input.required = true;
+        instanceInputsContainer.appendChild(input);
+      }
+    }
+
+    function renderInstancesHead(){
+      instancesHeadRow.innerHTML = '';
+      if(!attributesOrder || attributesOrder.length === 0){
+        instancesHeadRow.insertAdjacentHTML('beforeend', '<th>Thông tin</th>');
+        instancesHeadRow.insertAdjacentHTML('beforeend', '<th style="width:160px;text-align:right">Hành động</th>');
+        return;
+      }
+      let headHtml = '';
+      for(const attr of attributesOrder){
+        headHtml += `<th>${attr}</th>`;
+      }
+      headHtml += '<th style="width:160px;text-align:right">Hành động</th>';
+      instancesHeadRow.insertAdjacentHTML('beforeend', headHtml);
+    }
+
+    /* ======= Clear Instance Form ======= */
+    function clearInstanceForm(){
+      instanceInputsContainer.querySelectorAll('input').forEach(i => i.value = '');
+    }
+
+    /* ======= Load Instances (render table) ======= */
+    function loadInstances(animalName){
+const instancesRef = ref(db, `cities/${currentBranch}/animals/${animalName}/instances`);
+      clearChildren(instancesTableBody);
+      instancesTableBody.insertAdjacentHTML('beforeend',
+        `<tr><td><div class="empty-state">Đang tải danh sách con thú...</div></td></tr>`
+      );
+
+      onValue(instancesRef, snap => {
+        const data = snap.val();
+        clearChildren(instancesTableBody);
+
+        if(!data){
+          const tr = document.createElement('tr');
+          const td = document.createElement('td');
+          td.colSpan = Math.max(attributesOrder.length+1, 2);
+          td.innerHTML = '<div class="empty-state">Chưa có con thú nào.</div>';
+          tr.appendChild(td);
+          instancesTableBody.appendChild(tr);
+          return;
+        }
+
+        for(const [instanceId, instanceData] of Object.entries(data)){
+          const tr = document.createElement('tr');
+
+          if(attributesOrder && attributesOrder.length){
+            for(const attrName of attributesOrder){
+              const td = document.createElement('td');
+              td.textContent = instanceData[attrName] || '';
+              tr.appendChild(td);
+            }
+          }else{
+            const td = document.createElement('td');
+            td.textContent = JSON.stringify(instanceData);
+            tr.appendChild(td);
+          }
+
+          const tdAct = document.createElement('td');
+          tdAct.className = 'row-actions';
+          const delBtn = document.createElement('button');
+          delBtn.textContent = 'Xóa';
+          delBtn.className = 'btn-danger';
+          delBtn.addEventListener('click', ()=>{
+            if(confirm('Bạn có chắc muốn xóa con thú này?')){
+              remove(ref(db, `cities/\${currentBranch}/animals/\${selectedAnimal}/instances/\${instanceId}`));
+              toast('Đã xóa.');
+            }
+          });
+          tdAct.appendChild(delBtn);
+          tr.appendChild(tdAct);
+
+          instancesTableBody.appendChild(tr);
+        }
+      });
+    }
+
+    /* ======= Submit New Instance ======= */
+    addInstanceForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      if(!selectedAnimal){
+        alert('Vui lòng chọn thú trước.');
+        return;
+      }
+      const formData = new FormData(addInstanceForm);
+      const newInstance = {};
+      for(const attrName of attributesOrder){
+        const val = formData.get(attrName);
+        if(!val){
+          alert(`Bạn phải nhập giá trị cho thuộc tính "\${attrName}"!`);
+          return;
+        }
+        newInstance[attrName] = val;
+      }
+      const newId = Date.now().toString();
+      const instanceRef = ref(db, `cities/\${currentBranch}/animals/\${selectedAnimal}/instances/\${newId}`);
+      set(instanceRef, newInstance)
+        .then(()=>{ toast(`Đã thêm con thú mới cho "\${selectedAnimal}"`); clearInstanceForm(); })
+        .catch(err => { alert('Lỗi khi thêm con thú: ' + err.message); console.error(err); });
+    });
+
+    /* ======= Toggle Add Animal Form ======= */
+    showAddAnimalBtn.addEventListener('click', ()=>{
+      const visible = addAnimalSection.style.display === 'flex' || addAnimalSection.style.display === 'block';
+      addAnimalSection.style.display = visible ? 'none' : 'flex';
+      if(!visible){ animalNameInput.value=''; animalNameInput.focus(); }
+    });
+
+    /* ======= Save New Animal ======= */
+    saveAnimalBtn.addEventListener('click', ()=>{
+      const name = animalNameInput.value.trim();
+      if(!name){ alert('Bạn phải nhập tên thú!'); return; }
+      const animalRef = ref(db, `cities/\${currentBranch}/animals/\${name}`);
+      set(animalRef, { createdAt: Date.now() })
+        .then(()=>{ toast(`Đã thêm thú "\${name}"!`); animalNameInput.value=''; addAnimalSection.style.display='none'; })
+        .catch(error=>{ alert('Lỗi khi thêm thú: ' + error.message); console.error(error); });
+    });
+
+    /* ======= Add Attribute Form Toggle & Submit ======= */
+    showAddAttributeBtn.addEventListener('click', ()=>{
+      const visible = addAttributeForm.style.display === 'flex' || addAttributeForm.style.display === 'block';
+      addAttributeForm.style.display = visible ? 'none' : 'flex';
+      if(!visible){ attributeNameInput.value=''; attributeNameInput.focus(); }
+    });
+
+    addAttributeForm.addEventListener('submit', e=>{
+      e.preventDefault();
+      if(!selectedAnimal){ alert('Vui lòng chọn thú trước.'); return; }
+      const attrName = attributeNameInput.value.trim();
+      if(!attrName){ alert('Bạn phải nhập tên thuộc tính!'); return; }
+      const attrRef = ref(db, `cities/\${currentBranch}/animals/\${selectedAnimal}/attributes/\${attrName}`);
+      set(attrRef, true)
+        .then(()=>{ toast(`Đã thêm thuộc tính "\${attrName}"!`); attributeNameInput.value=''; addAttributeForm.style.display='none'; })
+        .catch(error=>{ alert('Lỗi khi thêm thuộc tính: ' + error.message); console.error(error); });
+    });
+
+    /* ======= Branch Buttons ======= */
+    document.getElementById('btnSaigon').addEventListener('click', ()=>selectBranch('Saigon'));
+    document.getElementById('btnDalat').addEventListener('click', ()=>selectBranch('Dalat'));
+
+    backBtn.addEventListener('click', ()=>{
+      currentBranch = null;
+      branchSelection.style.display = 'block';
+      backBox.style.display = 'none';
+      branchNameSpan.textContent = '—';
+      attributeManager.style.display = 'none';
+      selectedAnimal = null;
+      attributesOrder = [];
+      attributesData = {};
+      addAnimalSection.style.display = 'none';
+      animalTableBody.innerHTML = '<tr><td colspan="3"><div class="empty-state">Hãy chọn chi nhánh để xem dữ liệu.</div></td></tr>';
+    });
+
+    /* ======= Theme Toggle ======= */
+    themeSwitch.addEventListener('click', ()=>{
+      const isLight = document.body.classList.contains('light');
+      document.body.classList.toggle('light', !isLight);
+      themeSwitch.classList.toggle('active', isLight);
+      themeLabel.textContent = isLight ? 'Chế độ tối' : 'Chế độ sáng';
+    });
+  </script>
+</body>
+</html>
