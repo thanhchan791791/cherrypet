@@ -1,3 +1,4 @@
+
 function Saigon() {
   React.useEffect(() => {
     if (!document.getElementById("sg-style")) {
@@ -238,4 +239,9 @@ function Saigon() {
   );
 }
 
-ReactDOM.render(React.createElement(Saigon), document.getElementById("root"));
+function render_saigon() {
+  ReactDOM.render(React.createElement(Saigon), document.getElementById("root"));
+}
+
+// Gọi ngay lần đầu để hiển thị
+render_saigon();
