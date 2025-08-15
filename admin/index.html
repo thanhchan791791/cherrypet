@@ -221,26 +221,70 @@
 
   document.getElementById('close-modal-instance').onclick = ()=>{ modalInstance.classList.remove('show'); modalInstance.querySelector('.modal').classList.remove('show'); };
 
-  // ===== Load branches from Firebase =====
-  function loadBranches(){
-    db.ref('branches').once('value').then(snapshot=>{
-      const branches=snapshot.val()||{};
-      branchListUl.innerHTML='';
-      let i=0;
-      for(const branchName in branches){
-        const li=document.createElement('li');
-        li.dataset.branch=branchName;
-        li.innerHTML=`<i class="fas fa-city fa-2x"></i> ${branchName}`;
-        branchListUl.appendChild(li);
-        setTimeout(()=> li.classList.add('show'), i*200);
-        i++;
-        li.onclick=()=>{ currentBranch=branchName; branchNameSpan.textContent=currentBranch; stepBranch.classList.add('hidden'); stepAnimals.classList.remove('hidden'); renderAnimalList(); };
-      }
-    }).catch(err=>console.error("Error loading branches:",err));
-  }
+ // ===== Load branches from Firebase =====
+function loadBranches() {
+  db.ref('branches').once('value').then(snapshot => {
+    const branches = snapshot.val() || {};
+    branchListUl.innerHTML = '';
+    let i = 0;
 
-  loadBranches();
-  document.getElementById('back-to-branch').onclick=()=>{ currentBranch=null; stepAnimals.classList.add('hidden'); stepBranch.classList.remove('hidden'); };
+    for (const branchName in branches) {
+      const li = document.createElement('li');
+      li.dataset.branch = branchName;
+
+      // Xác định icon theo tên chi nhánh
+      let iconSrc = '';
+      const nameLower = branchName.toLowerCase();
+      if (nameLower === 'sài gòn' || nameLower === 'saigon') {
+        iconSrc = '../components/icon/iconsaigon.png';
+      } else if (nameLower === 'đà lạt' || nameLower === 'dalat') {
+        iconSrc = '../components/icon/icondalat.png';
+      }
+
+      // Thêm icon nếu có
+      if (iconSrc) {
+        const img = document.createElement('img');
+        img.src = iconSrc;
+        img.alt = branchName;
+        img.style.width = '32px';
+        img.style.height = '32px';
+        img.style.marginRight = '8px';
+        img.style.verticalAlign = 'middle';
+        li.appendChild(img);
+      }
+
+      // Thêm tên chi nhánh
+      const span = document.createElement('span');
+      span.textContent = branchName;
+      li.appendChild(span);
+
+      branchListUl.appendChild(li);
+
+      // Hiệu ứng hiện dần
+      setTimeout(() => li.classList.add('show'), i * 200);
+      i++;
+
+      // Sự kiện click
+      li.onclick = () => {
+        currentBranch = branchName;
+        branchNameSpan.textContent = currentBranch;
+        stepBranch.classList.add('hidden');
+        stepAnimals.classList.remove('hidden');
+        renderAnimalList();
+      };
+    }
+  }).catch(err => console.error("Error loading branches:", err));
+}
+
+// Gọi hàm load branches
+loadBranches();
+
+// Nút quay lại
+document.getElementById('back-to-branch').onclick = () => {
+  currentBranch = null;
+  stepAnimals.classList.add('hidden');
+  stepBranch.classList.remove('hidden');
+};
 
   // ===== Render Animal List =====
   function renderAnimalList(){
