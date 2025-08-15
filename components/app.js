@@ -236,11 +236,23 @@ function App() {
     React.createElement("div", { id: "content" })
   );
 }
-
 function loadComponent(name) {
-  const script = document.createElement("script");
-  script.src = `./components/${name}.js`;
-  document.body.appendChild(script);
+  if (!window.loadedComponents) window.loadedComponents = {};
+
+  if (!window.loadedComponents[name]) {
+    const script = document.createElement("script");
+    script.src = `./components/${name}.js`;
+    script.onload = () => {
+      window.loadedComponents[name] = true;
+      const renderFn = window[`render_${name.replace(/\//g, "_")}`];
+      if (typeof renderFn === "function") renderFn();
+    };
+    document.body.appendChild(script);
+  } else {
+    const renderFn = window[`render_${name.replace(/\//g, "_")}`];
+    if (typeof renderFn === "function") renderFn();
+  }
 }
+
 
 ReactDOM.render(React.createElement(App), document.getElementById("root"));
