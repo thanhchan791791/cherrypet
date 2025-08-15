@@ -204,23 +204,22 @@ function Saigon() {
   const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 
   const btn = (label, icon, color1, color2, target, extraClass = "") =>
+  React.createElement(
+    "button",
+    {
+      className: `sg-btn ${extraClass}`,
+      onClick: () => loadComponent(target), // chỉ dùng onClick thôi
+      style: !extraClass.includes("sg-btn-branch")
+        ? { background: `linear-gradient(135deg, ${color1}, ${color2})` }
+        : {},
+    },
     React.createElement(
-      "button",
-      {
-        className: `sg-btn ${extraClass}`,
-        onClick: () => loadComponent(target),
-        onTouchStart: () => loadComponent(target),
-        style: !extraClass.includes("sg-btn-branch")
-          ? { background: `linear-gradient(135deg, ${color1}, ${color2})` }
-          : {},
-      },
-      React.createElement(
-        "div",
-        { className: "sg-btn-icon" },
-        React.createElement("img", { src: `components/icon/${icon}`, alt: capitalize(label) }),
-        React.createElement("div", { className: "sg-btn-text-overlay" }, capitalize(label))
-      )
-    );
+      "div",
+      { className: "sg-btn-icon" },
+      React.createElement("img", { src: `components/icon/${icon}`, alt: capitalize(label) }),
+      React.createElement("div", { className: "sg-btn-text-overlay" }, capitalize(label))
+    )
+  );
 
   return React.createElement(
     "div",
