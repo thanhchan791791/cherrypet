@@ -3,12 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <title>Cherry Pet Coffee</title>
+
+    <!-- React -->
     <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
     <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- Firebase (phải load trước app.js) -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+
   </head>
   <body>
     <div id="root"></div>
-    <script src="./components/app.js"></script>
 
+    <!-- Script chính -->
+    <script src="./components/app.js"></script>
   </body>
 </html>
