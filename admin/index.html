@@ -587,23 +587,24 @@ function renderInstanceTable(animalData) {
     animalData.attributes.forEach(attr => {
       const td = document.createElement('td');
 
-      if (attr.toLowerCase() === 'hình ảnh') {
-        if (inst[attr] && inst[attr].length > 0) {
-          inst[attr].forEach(url => {
-            const img = document.createElement('img');
-            img.src = url;
-            img.style.width = '60px';
-            img.style.height = '60px';
-            img.style.objectFit = 'cover';
-            img.style.borderRadius = '6px';
-            td.appendChild(img);
-          });
-        } else {
-          td.textContent = 'Chưa có ảnh';
-        }
-      } else {
-        td.textContent = inst[attr] || '';
-      }
+     if (attr.toLowerCase() === 'hình ảnh' || attr.toLowerCase() === 'ảnh khác') {
+  if (Array.isArray(inst[attr]) && inst[attr].length > 0) {
+    inst[attr].forEach(url => {
+      const img = document.createElement('img');
+      img.src = url;
+      img.style.width = '60px';
+      img.style.height = '60px';
+      img.style.objectFit = 'cover';
+      img.style.borderRadius = '6px';
+      td.appendChild(img);
+    });
+  } else {
+    td.textContent = 'Chưa có ảnh';
+  }
+} else {
+  td.textContent = inst[attr] || '';
+}
+
 
       td.dataset.label = attr;
       tr.appendChild(td);
@@ -649,12 +650,12 @@ function renderInstanceTable(animalData) {
 
 
 // ===== Hàm render form =====
-
 function renderInstanceForm(attrs, dataInst = null) {
   instanceInputsDiv.innerHTML = '';
 
   attrs.forEach(attr => {
-    if (attr.toLowerCase() === 'hình ảnh') {
+    // Nếu là "Hình ảnh" hoặc "Ảnh khác" thì cho phép upload nhiều ảnh
+    if (attr.toLowerCase() === 'hình ảnh' || attr.toLowerCase() === 'ảnh khác') {
       const imageContainer = document.createElement('div');
       imageContainer.classList.add('image-inputs');
       imageContainer.style.marginTop = '10px';
@@ -665,7 +666,7 @@ function renderInstanceForm(attrs, dataInst = null) {
       imageContainer.appendChild(label);
 
       const imageList = document.createElement('div');
-      imageList.id = 'image-list';
+      imageList.id = `image-list-${attr.replace(/\s+/g, '-')}`;
       imageList.style.marginTop = '6px';
       imageContainer.appendChild(imageList);
 
@@ -678,36 +679,35 @@ function renderInstanceForm(attrs, dataInst = null) {
 
       instanceInputsDiv.appendChild(imageContainer);
 
+      // load ảnh cũ nếu có
       const existingImages = dataInst && dataInst[attr] ? dataInst[attr] : [];
-      existingImages.forEach(url => addImagePreview(url));
+      existingImages.forEach(url => addImagePreview(url, imageList));
 
-    addImageBtn.onclick = async () => {
-  const fileInput = document.createElement('input');
-  fileInput.type = 'file';
-  fileInput.accept = 'image/*';
-  fileInput.onchange = async () => {
-    const file = fileInput.files[0];
-    if (!file) return;
-    try {
-      const token = await getGitHubToken();
-      
-      // Tạo tên file theo tên con thú + timestamp + phần mở rộng
-      const ext = file.name.split('.').pop(); // lấy phần mở rộng
-      const fileName = `${currentAnimal}_${Date.now()}.${ext}`;
+      addImageBtn.onclick = async () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = async () => {
+          const file = fileInput.files[0];
+          if (!file) return;
+          try {
+            const token = await getGitHubToken();
+            const ext = file.name.split('.').pop();
+            const fileName = `${currentAnimal}_${Date.now()}.${ext}`;
 
-      const url = await uploadToGitHub(file, token, fileName);
-      await saveLinkToFirebase(url, fileName);
-      addImagePreview(url);
-      showToast('Upload ảnh thành công!');
-    } catch (err) {
-      console.error(err);
-      alert('Upload thất bại: ' + err.message);
-    }
-  };
-  fileInput.click();
-};
+            const url = await uploadToGitHub(file, token, fileName);
+            await saveLinkToFirebase(url, fileName);
+            addImagePreview(url, imageList);
+            showToast('Upload ảnh thành công!');
+          } catch (err) {
+            console.error(err);
+            alert('Upload thất bại: ' + err.message);
+          }
+        };
+        fileInput.click();
+      };
 
-      function addImagePreview(url) {
+      function addImagePreview(url, listEl) {
         const div = document.createElement('div');
         div.style.display = 'flex';
         div.style.marginBottom = '6px';
@@ -723,6 +723,7 @@ function renderInstanceForm(attrs, dataInst = null) {
 
         const hiddenInput = document.createElement('input');
         hiddenInput.type = 'hidden';
+        hiddenInput.name = attr;
         hiddenInput.value = url;
 
         const btnRemove = document.createElement('button');
@@ -734,10 +735,10 @@ function renderInstanceForm(attrs, dataInst = null) {
         div.appendChild(img);
         div.appendChild(hiddenInput);
         div.appendChild(btnRemove);
-        imageList.appendChild(div);
+        listEl.appendChild(div);
       }
-
     } else {
+      // Trường text bình thường
       const input = document.createElement('input');
       input.type = 'text';
       input.placeholder = attr;
@@ -753,26 +754,30 @@ addInstanceForm.onsubmit = async (e) => {
   e.preventDefault();
   const newInst = {};
 
-  // Lấy dữ liệu từ các input text
+  // Lấy dữ liệu từ các input text (loại bỏ hidden input ảnh)
   instanceInputsDiv.querySelectorAll('input[type="text"]').forEach(input => {
     if (!input.closest('.image-inputs')) newInst[input.name] = input.value;
   });
 
-  // Lấy dữ liệu hình ảnh
-  const imageInputs = instanceInputsDiv.querySelectorAll('#image-list input[type="hidden"]');
-  if (imageInputs.length > 0) {
-    newInst['Hình ảnh'] = [];
-    imageInputs.forEach(inp => {
-      if (inp.value.trim() !== '') newInst['Hình ảnh'].push(inp.value.trim());
-    });
-  }
+  // Lấy dữ liệu ảnh (Hình ảnh, Ảnh khác, ... các field dạng mảng ảnh)
+  const imageGroups = instanceInputsDiv.querySelectorAll('.image-inputs');
+  imageGroups.forEach(group => {
+    const label = group.querySelector('label').textContent.replace(':', '').trim();
+    const hiddenInputs = group.querySelectorAll('input[type="hidden"]');
+    if (hiddenInputs.length > 0) {
+      newInst[label] = [];
+      hiddenInputs.forEach(inp => {
+        if (inp.value.trim() !== '') newInst[label].push(inp.value.trim());
+      });
+    }
+  });
 
   const instRef = db.ref(`branches/${currentBranch}/animals/${currentAnimal}/instances`);
   try {
-    if(editKey){ // nếu đang edit
+    if (editKey) { // nếu đang edit
       await instRef.child(editKey).set(newInst);
       showToast('Đã cập nhật con thú');
-      editKey = null; // reset sau khi cập nhật
+      editKey = null;
     } else { // thêm mới
       await instRef.push(newInst);
       showToast('Đã thêm con thú mới');
@@ -784,7 +789,7 @@ addInstanceForm.onsubmit = async (e) => {
     addInstanceForm.reset();
     modalInstance.classList.remove('show');
     modalInstance.querySelector('.modal').classList.remove('show');
-  } catch(err) {
+  } catch (err) {
     console.error(err);
     alert('Lưu dữ liệu thất bại');
   }
