@@ -1,23 +1,495 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>Cherry Pet Coffee</title>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mua vé CherryPet Coffee</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Quicksand:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #ff9aa2; /* Hồng đào */
+            --secondary-color: #ffb7b2; /* Hồng nhạt */
+            --bg-color: #fcebeb; /* Nền hồng phấn */
+            --text-color: #555;
+            --card-bg: #fff;
+            --border-radius: 20px;
+            --shadow-soft: rgba(255, 154, 162, 0.15) 0px 8px 24px;
+        }
 
-    <!-- React -->
-    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
-    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
 
-    <!-- Firebase (phải load trước app.js) -->
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
-<script src="firebase-config.js"></script>
+        .container {
+            width: 100%;
+            max-width: 450px;
+            animation: fadeIn 0.8s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+        }
 
-  </head>
-  <body>
-    <div id="root"></div>
+        .card {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-soft);
+            padding: 28px;
+            margin-bottom: 20px;
+            transition: transform 0.4s cubic-bezier(0.215, 0.610, 0.355, 1.000), box-shadow 0.4s ease;
+        }
 
-    <!-- Script chính -->
-    <script src="./components/app.js"></script>
-  </body>
+        .card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: rgba(255, 154, 162, 0.25) 0px 15px 30px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 28px;
+            animation: popIn 0.6s ease-out;
+        }
+
+        .header h1 {
+            color: var(--primary-color);
+            font-weight: 700;
+            font-size: 2rem;
+            margin-bottom: 5px;
+        }
+        
+        .header p {
+            color: #888;
+            font-size: 1rem;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+        
+        .input-group.animate {
+            animation: slideInUp 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000) both;
+        }
+
+        .input-group:nth-of-type(1) { animation-delay: 0.2s; }
+        .input-group:nth-of-type(2) { animation-delay: 0.3s; }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .input-group input {
+            width: calc(100% - 24px);
+            padding: 14px;
+            border: 1px solid #ffdde1;
+            border-radius: 12px;
+            font-size: 1rem;
+            color: var(--text-color);
+            background-color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(255, 154, 162, 0.2);
+        }
+        
+        .ticket-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            padding: 15px;
+            background-color: #fff3f3;
+            border-radius: 15px;
+            animation: slideInRight 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000) 0.5s both;
+        }
+        
+        .ticket-info > div p {
+            margin: 0;
+        }
+
+        .ticket-price {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+
+        .quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .quantity-btn {
+            background-color: #ffe4e6;
+            color: var(--primary-color);
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 1.6rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .quantity-btn:hover {
+            background-color: #ffc2c9;
+            transform: scale(1.1);
+            box-shadow: 0 4px 8px rgba(255, 154, 162, 0.3);
+        }
+
+        .quantity-btn:active {
+            transform: scale(0.95);
+        }
+        
+        #quantity {
+            width: 45px;
+            text-align: center;
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+
+        .total-price {
+            text-align: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            margin-top: 24px;
+            animation: slideInUp 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000) 0.7s both;
+        }
+
+        .total-price span {
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #888;
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 18px;
+            background-color: var(--primary-color);
+            color: #fff;
+            border: none;
+            border-radius: 15px;
+            font-size: 1.3rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: rgba(255, 154, 162, 0.4) 0px 8px 16px;
+            animation: slideInUp 0.6s cubic-bezier(0.215, 0.610, 0.355, 1.000) 0.9s both;
+        }
+        
+        .btn-submit:hover {
+            background-color: #ff8fa5;
+            transform: translateY(-3px);
+            box-shadow: rgba(255, 154, 162, 0.5) 0px 12px 20px;
+        }
+
+        .btn-submit:active {
+            transform: translateY(1px);
+        }
+
+        .btn-submit.disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .hidden {
+            display: none;
+        }
+        
+        .reveal {
+            display: block !important;
+            animation: fadeIn 0.6s ease-in;
+        }
+
+        /* QR Code Modal */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.open {
+            display: flex;
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            padding: 30px;
+            border-radius: var(--border-radius);
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.320, 1.275);
+            position: relative;
+        }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+            font-size: 1.8rem;
+        }
+
+        .qr-code img {
+            width: 100%;
+            max-width: 250px;
+            height: auto;
+            border: 4px solid var(--secondary-color);
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+        
+        .qr-code img:hover {
+            transform: scale(1.05) rotate(2deg);
+        }
+
+        .payment-info {
+            background-color: #fff3f3;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 25px;
+            text-align: left;
+        }
+
+        .payment-info p {
+            margin: 10px 0;
+            font-size: 1rem;
+            line-height: 1.4;
+        }
+
+        .payment-info strong {
+            color: var(--primary-color);
+        }
+        
+        .modal-message {
+            margin-top: 20px;
+            font-size: 1rem;
+            color: #777;
+            line-height: 1.6;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #ccc;
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            cursor: pointer;
+            transition: color 0.2s, transform 0.2s;
+        }
+
+        .close-btn:hover {
+            color: var(--primary-color);
+            transform: rotate(90deg);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes slideInRight {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="card">
+        <div class="header">
+            <h1>🌸 CherryPet Coffee 🌸</h1>
+            <p>Nhập thông tin để mua vé trải nghiệm</p>
+        </div>
+
+        <div class="input-group animate">
+            <label for="name">Họ và tên</label>
+            <input type="text" id="name" placeholder="Nhập họ và tên của bạn" required>
+        </div>
+
+        <div class="input-group animate">
+            <label for="phone">Số điện thoại</label>
+            <input type="tel" id="phone" placeholder="Nhập số điện thoại" required>
+        </div>
+
+        <div id="ticket-section" class="hidden">
+            <div class="ticket-info">
+                <div>
+                    <p>Giá vé</p>
+                    <p class="ticket-price">65.000 VNĐ</p>
+                </div>
+                <div class="quantity-control">
+                    <button class="quantity-btn" id="decrement-btn">-</button>
+                    <span id="quantity">1</span>
+                    <button class="quantity-btn" id="increment-btn">+</button>
+                </div>
+            </div>
+
+            <div class="total-price">
+                <span>Tổng số tiền:</span> <span id="total-amount">65.000 VNĐ</span>
+            </div>
+
+            <button class="btn-submit" id="checkout-btn">Thanh toán</button>
+        </div>
+    </div>
+</div>
+
+<div id="payment-modal" class="modal">
+    <div class="modal-content">
+        <button class="close-btn" id="close-modal-btn">&times;</button>
+        <h2>Quét mã để thanh toán</h2>
+        <div class="qr-code">
+            <img id="qr-image" src="" alt="QR Code thanh toán">
+        </div>
+        <div class="payment-info">
+            <p><strong>Ngân hàng:</strong> MB Bank (Ngân hàng Quân đội)</p>
+            <p><strong>Số tài khoản:</strong> 0909650816</p>
+            <p><strong>Chủ tài khoản:</strong> Trần Vũ Ngọc Thành</p>
+            <p><strong>Nội dung chuyển khoản:</strong> <span id="transfer-content"></span></p>
+            <p><strong>Tổng số tiền:</strong> <span id="modal-total-amount"></span></p>
+        </div>
+        <p class="modal-message">Sau khi thanh toán, quý khách vui lòng đến quầy cung cấp Tên và SĐT để nhận vé. Chúc quý khách có một trải nghiệm tuyệt vời tại CherryPet Coffee!</p>
+    </div>
+</div>
+
+<script>
+    const ticketPrice = 65000;
+    const bankInfo = {
+        accountNumber: '0909650816',
+        accountName: 'Trần Vũ Ngọc Thành',
+        bankName: 'MB Bank',
+        bankShortName: 'MB',
+    };
+
+    const nameInput = document.getElementById('name');
+    const phoneInput = document.getElementById('phone');
+    const ticketSection = document.getElementById('ticket-section');
+
+    const quantitySpan = document.getElementById('quantity');
+    const totalAmountSpan = document.getElementById('total-amount');
+    const decrementBtn = document.getElementById('decrement-btn');
+    const incrementBtn = document.getElementById('increment-btn');
+    const checkoutBtn = document.getElementById('checkout-btn');
+    const paymentModal = document.getElementById('payment-modal');
+    const closeModalBtn = document.getElementById('close-modal-btn');
+    const transferContentSpan = document.getElementById('transfer-content');
+    const modalTotalAmountSpan = document.getElementById('modal-total-amount');
+    const qrImage = document.getElementById('qr-image');
+
+    let quantity = 1;
+
+    function formatCurrency(amount) {
+        return amount.toLocaleString('vi-VN', { style: 'currency', currency: 'VND' });
+    }
+
+    function updateTotal() {
+        const total = quantity * ticketPrice;
+        totalAmountSpan.textContent = formatCurrency(total);
+        modalTotalAmountSpan.textContent = formatCurrency(total);
+    }
+
+    function checkInputs() {
+        if (nameInput.value.trim() !== '' && phoneInput.value.trim() !== '') {
+            if (ticketSection.classList.contains('hidden')) {
+                ticketSection.classList.add('reveal');
+                ticketSection.classList.remove('hidden');
+            }
+        } else {
+            if (!ticketSection.classList.contains('hidden')) {
+                ticketSection.classList.add('hidden');
+                ticketSection.classList.remove('reveal');
+            }
+        }
+    }
+
+    nameInput.addEventListener('input', checkInputs);
+    phoneInput.addEventListener('input', checkInputs);
+
+    decrementBtn.addEventListener('click', () => {
+        if (quantity > 1) {
+            quantity--;
+            quantitySpan.textContent = quantity;
+            updateTotal();
+        }
+    });
+
+    incrementBtn.addEventListener('click', () => {
+        quantity++;
+        quantitySpan.textContent = quantity;
+        updateTotal();
+    });
+
+    checkoutBtn.addEventListener('click', () => {
+        const name = nameInput.value.trim();
+        const phone = phoneInput.value.trim();
+        const total = quantity * ticketPrice;
+        
+        if (!name || !phone) {
+            alert('Vui lòng nhập đầy đủ Tên và Số điện thoại để thanh toán!');
+            return;
+        }
+
+        const transferContent = `${name} - ${phone}`;
+        transferContentSpan.textContent = transferContent;
+        
+        // Tạo URL cho QR code theo chuẩn VietQR
+        const qrCodeData = `https://api.vietqr.io/image/MB-${bankInfo.accountNumber}-print.png?amount=${total}&addInfo=${encodeURIComponent(transferContent)}`;
+        qrImage.src = qrCodeData;
+        
+        paymentModal.classList.add('open');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        paymentModal.classList.remove('open');
+    });
+
+    paymentModal.addEventListener('click', (e) => {
+        if (e.target === paymentModal) {
+            paymentModal.classList.remove('open');
+        }
+    });
+
+    // Cập nhật tổng tiền ban đầu khi trang tải
+    updateTotal();
+</script>
+
+</body>
 </html>
